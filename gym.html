@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Guys - Case Study</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-color: #121212; 
+            --surface-color: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #9e9e9e;
+            --accent: #f5b041;
+            
+            --shadow-out: 6px 6px 15px rgba(0, 0, 0, 0.6), -4px -4px 12px rgba(255, 255, 255, 0.02);
+            --shadow-in: inset 4px 4px 8px rgba(0, 0, 0, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px; 
+            z-index: 0;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 20%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 90%);
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .top-nav {
+            display: flex;
+            gap: 30px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 20px;
+            font-family: sans-serif;
+        }
+
+        .top-nav span {
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .top-nav span:hover {
+            color: var(--text-main);
+        }
+
+        .top-nav .active-nav {
+            font-size: 2rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            background: var(--surface-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-out);
+            transition: all 0.3s;
+            z-index: 100;
+            font-family: sans-serif;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .slider-section {
+            position: relative;
+            width: 100%;
+            height: 680px;
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 340px; 
+            height: 550px;
+            background: var(--surface-color);
+            border-radius: 30px;
+            box-shadow: var(--shadow-out);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 25px;
+        }
+
+        .slide.active {
+            transform: translateX(0) scale(1);
+            z-index: 10;
+            opacity: 1;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--shadow-out);
+        }
+
+        .slide.active:hover {
+            transform: scale(1.02);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9), 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .slide.prev {
+            transform: translateX(-65%) scale(0.85);
+            z-index: 5;
+            opacity: 0.5;
+        }
+
+        .slide.next {
+            transform: translateX(65%) scale(0.85);
+            z-index: 5;
+            opacity: 0.5;
+        }
+
+        .slide.hidden-left {
+            transform: translateX(-100%) scale(0.7);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .slide.hidden-right {
+            transform: translateX(100%) scale(0.7);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background-color: var(--accent);
+            transform: scale(1.3);
+            border-radius: 2px;
+        }
+
+        .text-info-container {
+            margin-top: 40px;
+            text-align: center;
+            max-width: 800px;
+            min-height: 250px; /* فضای بیشتر برای متن‌های تخصصی طولانی‌تر */
+            padding: 0 20px;
+            font-family: sans-serif;
+        }
+
+        .text-content {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .text-content.fade-out {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .text-content.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-title {
+            font-size: 1.6rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .info-title::before {
+            content: ">_ ";
+            color: var(--accent);
+        }
+
+        .info-desc {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 0.9rem;
+            text-align: justify;
+        }
+
+        .bottom-section {
+            margin-top: 60px;
+            margin-bottom: 80px;
+            width: 100%;
+            max-width: 900px;
+            font-family: sans-serif;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.9);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .architecture-desc {
+            color: var(--text-muted);
+            text-align: left;
+            max-width: 800px;
+            margin: 0 auto 40px auto;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            padding: 0 20px;
+        }
+
+        .architecture-desc strong {
+            color: var(--accent);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            padding: 0 20px;
+        }
+
+        .grid-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--surface-color);
+            box-shadow: var(--shadow-out);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .grid-item:hover .icon-box {
+            box-shadow: var(--shadow-in);
+            color: var(--accent);
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: var(--surface-color);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            box-shadow: var(--shadow-out);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .item-text {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .image-lightbox {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(18, 18, 18, 0.95);
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-lightbox.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            max-height: 90vh;
+            max-width: 90vw;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            object-fit: contain;
+        }
+
+        .image-lightbox.show .lightbox-content {
+            transform: scale(1);
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: var(--text-muted);
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            z-index: 2001;
+        }
+
+        .close-lightbox:hover {
+            color: var(--text-main);
+        }
+
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .slide {
+                width: 280px;
+                height: 450px; 
+            }
+            .back-btn {
+                position: relative;
+                left: 0;
+                top: 0;
+                margin-top: 20px;
+                padding: 8px 15px;
+                font-size: 0.8rem;
+                align-self: flex-start;
+                margin-left: 20px;
+            }
+            .info-desc {
+                text-align: left;
+            }
+            .close-lightbox {
+                top: 15px;
+                right: 20px;
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="imageLightbox" class="image-lightbox" onclick="closeLightbox()">
+        <span class="close-lightbox" onclick="closeLightbox()">✕</span>
+        <img id="fullSizeImage" class="lightbox-content" onclick="event.stopPropagation()">
+    </div>
+
+    <div class="content-wrapper">
+        <a href="index.html" class="back-btn">
+            <i class="ph ph-arrow-left"></i> Back
+        </a>
+
+        <!-- منوی بالا -->
+        <div class="top-nav">
+            <span onclick="window.location.href='tempo.html'">TEMPO</span>
+            <span class="active-nav">GYM GUYS</span>
+            <span onclick="window.location.href='moodflix.html'">MOODFLIX APP</span>
+            <span onclick="window.location.href='resto.html'">RESTO MANAGER</span>
+        </div>
+
+      <!-- اسلایدر با 10 عکس (اصلاح شده) -->
+      <div class="slider-section" id="slider">
+        <div class="slide" onclick="handleSlideClick(0)"><img src="g1.jpg" alt="Screen 1"></div>
+        <div class="slide" onclick="handleSlideClick(1)"><img src="g2.jpg" alt="Screen 2"></div>
+        <div class="slide" onclick="handleSlideClick(2)"><img src="g3.jpg" alt="Screen 3"></div>
+        <div class="slide" onclick="handleSlideClick(3)"><img src="g4.jpg" alt="Screen 4"></div>
+        <div class="slide" onclick="handleSlideClick(4)"><img src="g5.jpg" alt="Screen 5"></div>
+        <div class="slide" onclick="handleSlideClick(5)"><img src="g6.jpg" alt="Screen 6"></div>
+        <div class="slide" onclick="handleSlideClick(6)"><img src="g7.jpg" alt="Screen 7"></div>
+        <div class="slide" onclick="handleSlideClick(7)"><img src="g8.jpg" alt="Screen 8"></div>
+        <div class="slide" onclick="handleSlideClick(8)"><img src="g9.jpg" alt="Screen 9"></div>
+        <div class="slide" onclick="handleSlideClick(9)"><img src="g10.jpg" alt="Screen 10"></div>
+    </div>
+
+        <div class="dots" id="dots-container"></div>
+
+        <div class="text-info-container">
+            <div class="text-content" id="text-box">
+                <h2 class="info-title" id="info-title">Loading...</h2>
+                <p class="info-desc" id="info-desc">Loading...</p>
+            </div>
+        </div>
+
+        <!-- توضیحات کلی معماری -->
+        <div class="bottom-section">
+            <h3 class="section-title">&lt; APP ARCHITECTURE & INFO /&gt;</h3>
+            
+            <div class="architecture-desc" id="arch-desc">
+                <p><strong>Gym Guys:</strong> A highly scalable, AI-powered fitness application built natively for Android using Kotlin and Jetpack Compose. Engineered on a robust Clean Architecture foundation, the app leverages Firebase (Auth/Firestore) for secure, real-time NoSQL data synchronization, while integrating advanced Android Hardware Sensors for zero-latency step telemetry. Furthermore, the integration of Google Gemini AI provides a context-aware fitness assistant, paired with highly optimized Unidirectional Data Flow (StateFlow) and physics-based animations for a premium user experience.</p>
+            </div>
+
+            <div class="grid-container" id="tech-stack-grid">
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-house"></i></div>
+                    <div class="item-text">Clean Arch & UDF</div>
+                </div>
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-database"></i></div>
+                    <div class="item-text">Firebase & Firestore</div>
+                </div>
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-brain"></i></div>
+                    <div class="item-text">Gemini AI (LLM)</div>
+                </div>
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-watch"></i></div>
+                    <div class="item-text">Hardware Sensors</div>
+                </div>
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-paint-brush-broad"></i></div>
+                    <div class="item-text">Jetpack Compose</div>
+                </div>
+                <div class="grid-item" onclick="window.open('https://github.com/MobinJamshidi/GymGuys', '_blank')">
+                    <div class="icon-box"><i class="ph-fill ph-github-logo"></i></div>
+                    <div class="item-text" style="color: var(--text-main);">Source Code</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- کدهای جاوااسکریپت و دیتای متون -->
+    <script>
+        const slideData = [
+            {
+                title: "Persistent Onboarding Flow",
+                desc: "Engineered a persistent One-Time Onboarding Flow, integrating local storage solutions (PreferencesManager) to track user states and ensure optimal retention UX. Seamlessly injected Android Context within Jetpack Compose utilizing LocalContext.current, maintaining clean architectural boundaries while accessing system-level preferences. Synchronized temporary UI states with persistent data layers, executing local storage updates and navigation backstack clearing (popUpTo) simultaneously for a flawless user journey."
+            },
+            {
+                title: "High-Performance Data Pickers",
+                desc: "Optimized Jetpack Compose rendering performance by strategically implementing derivedStateOf and remember, significantly reducing unnecessary recomposition cycles during complex state evaluations. Engineered high-performance scrollable Data Pickers utilizing advanced Kotlin Coroutines and Flow operators (snapshotFlow, debounce, distinctUntilChanged) to prevent UI-thread blockage and ensure buttery-smooth scrolling. Enhanced Lazy Layout rendering efficiency (LazyColumn, LazyRow) by implementing stable, unique item keys and managing programmatic scroll initializations for large data ranges. Designed an accessible, state-driven demographic collection module by migrating inline pickers to custom, state-managed AlertDialog components, drastically improving UX on smaller screens. Managed complex UI side-effects seamlessly using LaunchedEffect to synchronize state changes between user interactions and programmatic scroll animations (animateScrollToItem)."
+            },
+            {
+                title: "Secure Full-Stack Auth",
+                desc: "Architected a secure, full-stack Authentication system integrating Firebase Auth and Google Sign-In (OAuth 2.0), effectively managing user sessions and secure credential flows. Implemented a reactive MVVM architecture utilizing Kotlin Coroutines and StateFlow to seamlessly manage asynchronous backend requests and dynamic UI states (Loading, Success, Error). Integrated Cloud Firestore (NoSQL) to automatically provision and manage real-time user profile documents synchronously upon successful registration or OAuth login. Modernized 3rd-party integrations by leveraging the Activity Result API (rememberLauncherForActivityResult) for Google Sign-In, ensuring lifecycle-aware and memory-safe implementations. Developed robust, state-driven UI forms in Jetpack Compose, featuring real-time client-side validation, visual password toggles (VisualTransformation), and user-friendly server error handling."
+            },
+            {
+                title: "Hardware Sensor Telemetry",
+                desc: "Integrated Android Hardware Sensors (SensorManager) to build a real-time, highly accurate Step Counter and Distance Tracker, processing raw TYPE_STEP_COUNTER telemetry data. Engineered Lifecycle-Aware components using Compose DisposableEffect and AndroidViewModel's onCleared to dynamically manage sensor listeners, ensuring zero memory leaks and optimal battery efficiency. Implemented modern Android Runtime Permission flows using the Activity Result API, dynamically requesting and handling strict ACTIVITY_RECOGNITION privileges for Android 10+ (API 29) compliance. Architected a modular Dashboard Screen by injecting multiple ViewModels, effectively orchestrating hardware data streams and Firebase Authentication states (Secure Sign-out routing) simultaneously. Developed a reactive, Glassmorphism-inspired UI utilizing custom Compose modifiers and dynamic state observation to reflect real-time hardware metrics without UI thread blocking."
+            },
+            {
+                title: "Accelerated Micro-Interactions",
+                desc: "Architected a highly reusable First-Time User Experience (FTUE) module, enabling dynamic, screen-specific tutorial popups with contextual local storage tracking (PreferencesManager). Engineered GPU-accelerated micro-interactions utilizing Compose graphicsLayer to execute translation, scaling, and alpha animations, bypassing expensive layout recompositions for 60fps rendering. Implemented physics-based UI motion (spring animations) with custom damping ratios and stiffness, delivering a premium, bouncy visual aesthetic commonly found in top-tier commercial apps. Designed a modular, decoupled Compose architecture that accepts dynamic TutorialStep data models, drastically reducing UI codebase redundancy across the application. Managed granular Dialog properties and user flows, ensuring controlled interaction states (dismissOnClickOutside = false) while seamlessly syncing UI dismissals with persistent storage flags."
+            },
+            {
+                title: "UDF & Optimistic Rendering",
+                desc: "Implemented a robust Unidirectional Data Flow (UDF) architecture in Jetpack Compose, leveraging StateFlow and collectAsState() to seamlessly synchronize complex, deeply-nested workout datasets with the UI. Engineered Optimistic UI Updates and local state caching using mutableStateListOf tied to LaunchedEffect, enabling zero-latency form editing while optimizing ViewModel state emissions during CRUD operations. Enhanced Asynchronous UX processing by integrating dynamic, state-driven loading indicators (e.g., CircularProgressIndicator) seamlessly within the TopAppBar, providing real-time feedback during network/database transactions. Orchestrated the integration of a custom FTUE (First-Time User Experience) module alongside complex Nested Navigation graphs, maintaining clean separation of concerns and component reusability. Architected scalable Data Models (MenuItemCategory, ExerciseItem) utilizing immutable UUIDs to guarantee stable list rendering and prevent UI tearing during dynamic re-compositions."
+            },
+            {
+                title: "Cloud-Synchronized Firestore",
+                desc: "Architected a Cloud-Synchronized ViewModel using Kotlin Coroutines and StateFlow, seamlessly orchestrating real-time data flow between the Compose UI and Firebase Cloud Firestore. Designed a scalable NoSQL Database Schema utilizing Firestore sub-collections (users/{uid}/workouts) to efficiently manage decoupled user datasets and ensure high-performance CRUD operations. Implemented Optimistic UI Updates and Auto-Save mechanisms, providing a zero-latency editing experience for users while asynchronously syncing data streams to the backend. Engineered a robust, offline-aware Exception Handling module, intelligently parsing raw network errors, timeout sockets, and 403 API responses into localized, user-friendly UI messages. Modernized asynchronous Firebase requests by leveraging Kotlin .await() extensions within viewModelScope, eliminating callback hell and ensuring memory-safe database transactions."
+            },
+            {
+                title: "Bespoke Dark Mode System",
+                desc: "Architected a highly responsive Workout Explorer UI utilizing Jetpack Compose's FlowRow for fluid, screen-agnostic layout wrapping, ensuring optimal rendering across diverse device form factors. Engineered a zero-latency dynamic rendering engine using state-driven logic (when expressions mapped to observable states), eliminating navigation overhead and delivering instantaneous content switching. Successfully integrated decoupled FTUE modules (TutorialPopup) into complex UI hierarchies, seamlessly orchestrating local storage persistence flags without disrupting the primary view lifecycle. Designed a bespoke Dark Mode Design System by overriding Material 3 default color schemes, utilizing custom translucent layers (surfaceVariant) and layered Box architectures for an immersive UX. Developed modular, reusable UI building blocks (Dynamic Chips, Progress Bars, Exercise Cards) structured perfectly for future migration to MVVM reactive data streams (StateFlow)."
+            },
+            {
+                title: "Gemini AI Context Manager",
+                desc: "Integrated Google Gemini AI (LLM) within the application architecture, creating a specialized, context-aware Fitness Assistant capable of multilingual natural language processing. Engineered an Advanced Prompt System & Context Manager within the ViewModel, concatenating chat histories dynamically to provide the LLM with conversational memory while enforcing strict domain boundaries (Fitness/Sports only). Architected a resilient, state-driven Chat UI utilizing Jetpack Compose LazyColumn, featuring automated programmatic scrolling (animateScrollToItem) and distinct visual states for User, AI, and asynchronous Loading components. Implemented robust API Security and Error Handling protocols, securely managing API credentials via externalized configurations (e.g., local.properties) and deploying intelligent parsing for 403, 429 (Quota limit), and network errors. Optimized application memory footprint by employing Kotlin by lazy delegates for LLM instantiation, ensuring the heavy-weight GenerativeModel is initialized strictly on-demand."
+            },
+            {
+                title: "Reactive Algorithmic UI",
+                desc: "Engineered a real-time, button-less BMI Calculator utilizing Jetpack Compose reactive states (onValueChange), delivering instantaneous algorithmic feedback without explicit user submission triggers. Implemented robust, fail-safe input handling utilizing nullable type parsing (toDoubleOrNull) and restricted keyboard types, ensuring crash-free runtime environments during edge-case user inputs. Designed a dynamic Semantic Visual Feedback system that programmatically alters UI typography and component aesthetics based on real-time health classifications (e.g., dynamic color coding). Architected a modular and clean UI hierarchy, extracting layout elements into reusable building blocks (BMIScaleItem) and seamlessly integrating the previously decoupled FTUE TutorialPopup module. Developed a modern Glassmorphism interface leveraging deeply layered Surface and Box components with precise alpha rendering to create an immersive data-entry experience."
+            }
+        ];
+
+        let currentIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dotsContainer = document.getElementById('dots-container');
+        const textBox = document.getElementById('text-box');
+        const titleEl = document.getElementById('info-title');
+        const descEl = document.getElementById('info-desc');
+
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            dot.onclick = () => handleSlideClick(index);
+            dotsContainer.appendChild(dot);
+        });
+        const dots = document.querySelectorAll('.dot');
+
+        function updateSlider() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev', 'next', 'hidden-left', 'hidden-right');
+                
+                if (index === currentIndex) {
+                    slide.classList.add('active');
+                } else if (index === currentIndex - 1 || (currentIndex === 0 && index === slides.length - 1)) {
+                    slide.classList.add('prev');
+                } else if (index === currentIndex + 1 || (currentIndex === slides.length - 1 && index === 0)) {
+                    slide.classList.add('next');
+                } else if (index < currentIndex) {
+                    slide.classList.add('hidden-left');
+                } else {
+                    slide.classList.add('hidden-right');
+                }
+            });
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+
+            textBox.classList.remove('fade-in');
+            textBox.classList.add('fade-out');
+            
+            setTimeout(() => {
+                titleEl.innerText = slideData[currentIndex].title;
+                descEl.innerText = slideData[currentIndex].desc;
+                
+                textBox.classList.remove('fade-out');
+                textBox.classList.add('fade-in');
+            }, 300);
+        }
+
+        function handleSlideClick(index) {
+            if (index === currentIndex) {
+                openLightbox(index);
+            } else {
+                currentIndex = index;
+                updateSlider();
+            }
+        }
+
+        const lightbox = document.getElementById('imageLightbox');
+        const fullSizeImage = document.getElementById('fullSizeImage');
+
+        function openLightbox(index) {
+            fullSizeImage.src = `g${index + 1}.jpg`; 
+            lightbox.classList.add('show');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('show');
+        }
+
+        updateSlider();
+    </script>
+</body>
+</html>

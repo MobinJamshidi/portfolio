@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MoodFlix - Case Study</title>
+    <!-- اضافه کردن آیکون‌ها -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            /* رنگ‌های متناسب با تم مهندسی و تاریک */
+            --bg-color: #121212; 
+            --surface-color: #1e1e1e;
+            --text-main: #ffffff;
+            --text-muted: #9e9e9e;
+            --accent: #f5b041;
+            
+            --shadow-out: 6px 6px 15px rgba(0, 0, 0, 0.6), -4px -4px 12px rgba(255, 255, 255, 0.02);
+            --shadow-in: inset 4px 4px 8px rgba(0, 0, 0, 0.6), inset -4px -4px 8px rgba(255, 255, 255, 0.02);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Courier New', Courier, monospace, sans-serif; /* تغییر فونت پایه برای حس برنامه‌نویسی */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* --- استایل شبکه مهندسی (Tech Grid) در پس‌زمینه --- */
+        body::before {
+            content: "";
+            position: fixed; /* ثابت در پس‌زمینه هنگام اسکرول */
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            /* ایجاد خطوط شطرنجی بسیار ظریف */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px; /* ابعاد خانه‌های شبکه */
+            z-index: 0;
+            pointer-events: none;
+            /* محو کردن لبه‌های شبکه برای تمرکز روی مرکز صفحه */
+            mask-image: radial-gradient(circle at center, black 20%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 20%, transparent 90%);
+        }
+
+        /* محتوای اصلی (باید روی شبکه قرار بگیرند) */
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* هدر / منوی بالا */
+        .top-nav {
+            display: flex;
+            gap: 30px;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 20px;
+            font-family: sans-serif;
+        }
+
+        .top-nav span {
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .top-nav span:hover {
+            color: var(--text-main);
+        }
+
+        .top-nav .active-nav {
+            font-size: 2rem;
+            color: var(--text-main);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .back-btn {
+            position: absolute;
+            left: 40px;
+            top: 40px;
+            color: var(--text-main);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            background: var(--surface-color);
+            padding: 10px 20px;
+            border-radius: 30px;
+            box-shadow: var(--shadow-out);
+            transition: all 0.3s;
+            z-index: 100;
+            font-family: sans-serif;
+        }
+
+        .back-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        /* بخش اسلایدر سه‌بعدی */
+        .slider-section {
+            position: relative;
+            width: 100%;
+            height: 680px;
+            margin-top: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        .slide {
+            position: absolute;
+            width: 340px; 
+            height: 550px;
+            background: var(--surface-color);
+            border-radius: 30px;
+            box-shadow: var(--shadow-out);
+            transition: all 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+            cursor: pointer;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 5px;
+            border: 1px solid rgba(255, 255, 255, 0.05); /* یک حاشیه بسیار ظریف شیشه‌ای */
+        }
+
+        .slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 25px;
+        }
+
+        .slide.active {
+            transform: translateX(0) scale(1);
+            z-index: 10;
+            opacity: 1;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8), var(--shadow-out);
+        }
+
+        .slide.active:hover {
+            transform: scale(1.02);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.9), 0 0 20px rgba(255, 255, 255, 0.05);
+        }
+
+        .slide.prev {
+            transform: translateX(-65%) scale(0.85);
+            z-index: 5;
+            opacity: 0.5;
+        }
+
+        .slide.next {
+            transform: translateX(65%) scale(0.85);
+            z-index: 5;
+            opacity: 0.5;
+        }
+
+        .slide.hidden-left {
+            transform: translateX(-100%) scale(0.7);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .slide.hidden-right {
+            transform: translateX(100%) scale(0.7);
+            z-index: 1;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* نشانگرها */
+        .dots {
+            display: flex;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--text-muted);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .dot.active {
+            background-color: var(--accent);
+            transform: scale(1.3);
+            border-radius: 2px; /* در سبک مهندسی، نقطه فعال مربعی می‌شود */
+        }
+
+        /* بخش متن توضیحات */
+        .text-info-container {
+            margin-top: 40px;
+            text-align: center;
+            max-width: 800px;
+            min-height: 160px;
+            padding: 0 20px;
+            font-family: sans-serif;
+        }
+
+        .text-content {
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .text-content.fade-out {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        .text-content.fade-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .info-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            color: var(--text-main);
+            font-family: 'Courier New', Courier, monospace; /* تایپوگرافی کدنویسی برای تایتل */
+        }
+
+        .info-title::before {
+            content: ">_ "; /* استایل ترمینال */
+            color: var(--accent);
+        }
+
+        .info-desc {
+            color: var(--text-muted);
+            line-height: 1.8;
+            font-size: 0.95rem;
+            text-align: justify;
+        }
+
+        /* شبکه دکمه‌های پایین و توضیحات کلی */
+        .bottom-section {
+            margin-top: 60px;
+            margin-bottom: 80px;
+            width: 100%;
+            max-width: 900px;
+            font-family: sans-serif;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            color: rgba(255,255,255,0.9);
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .architecture-desc {
+            color: var(--text-muted);
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto 50px auto;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            padding: 0 20px;
+        }
+
+        .architecture-desc strong {
+            color: var(--accent);
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            padding: 0 20px;
+        }
+
+        .grid-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 15px;
+            border-radius: 12px; /* گوشه‌های تیزتر برای حس مهندسی */
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--surface-color);
+            box-shadow: var(--shadow-out);
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .grid-item:hover .icon-box {
+            box-shadow: var(--shadow-in);
+            color: var(--accent);
+        }
+
+        .icon-box {
+            width: 60px;
+            height: 60px;
+            background: var(--surface-color);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            box-shadow: var(--shadow-out);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .item-text {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* استایل‌های مربوط به پاپ‌آپِ تمام‌صفحه‌ی عکس */
+        .image-lightbox {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(18, 18, 18, 0.95); /* هماهنگ با رنگ پس‌زمینه */
+            backdrop-filter: blur(8px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .image-lightbox.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .lightbox-content {
+            max-height: 90vh;
+            max-width: 90vw;
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+            transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            object-fit: contain;
+        }
+
+        .image-lightbox.show .lightbox-content {
+            transform: scale(1);
+        }
+
+        .close-lightbox {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            color: var(--text-muted);
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+            z-index: 2001;
+        }
+
+        .close-lightbox:hover {
+            color: var(--text-main);
+        }
+
+        /* واکنش‌گرایی برای موبایل */
+        @media (max-width: 768px) {
+            .grid-container {
+                grid-template-columns: repeat(1, 1fr);
+            }
+            .slide {
+                width: 280px;
+                height: 450px; 
+            }
+            .back-btn {
+                position: relative;
+                left: 0;
+                top: 0;
+                margin-top: 20px;
+                padding: 8px 15px;
+                font-size: 0.8rem;
+                align-self: flex-start;
+                margin-left: 20px;
+            }
+            .info-desc {
+                text-align: left;
+            }
+            .close-lightbox {
+                top: 15px;
+                right: 20px;
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- مودال پاپ‌آپ عکس (Lightbox) -->
+    <div id="imageLightbox" class="image-lightbox" onclick="closeLightbox()">
+        <span class="close-lightbox" onclick="closeLightbox()">✕</span>
+        <img id="fullSizeImage" class="lightbox-content" onclick="event.stopPropagation()">
+    </div>
+
+    <!-- لفاف محتوای اصلی -->
+    <div class="content-wrapper">
+        <!-- دکمه بازگشت به پورتفولیو -->
+        <a href="index.html" class="back-btn">
+            <i class="ph ph-arrow-left"></i> Back
+        </a>
+
+        <!-- منوی بالا -->
+        <div class="top-nav">
+            <span onclick="window.location.href='tempo.html'">TEMPO</span>
+            <span onclick="window.location.href='gym.html'">GYM GUYS</span>
+            <span class="active-nav">MOODFLIX APP</span>
+            <span onclick="window.location.href='resto.html'">RESTO MANAGER</span>
+        </div>
+
+        <!-- اسلایدر عکس‌ها -->
+        <div class="slider-section" id="slider">
+            <div class="slide" onclick="handleSlideClick(0)"><img src="m1.jpg" alt="Screen 1"></div>
+            <div class="slide" onclick="handleSlideClick(1)"><img src="m2.jpg" alt="Screen 2"></div>
+            <div class="slide" onclick="handleSlideClick(2)"><img src="m3.jpg" alt="Screen 3"></div>
+            <div class="slide" onclick="handleSlideClick(3)"><img src="m4.jpg" alt="Screen 4"></div>
+            <div class="slide" onclick="handleSlideClick(4)"><img src="m5.jpg" alt="Screen 5"></div>
+            <div class="slide" onclick="handleSlideClick(5)"><img src="m6.jpg" alt="Screen 6"></div>
+            <div class="slide" onclick="handleSlideClick(6)"><img src="m7.jpg" alt="Screen 7"></div>
+            <div class="slide" onclick="handleSlideClick(7)"><img src="m8.jpg" alt="Screen 8"></div>
+        </div>
+
+        <!-- نقاط ناوبری -->
+        <div class="dots" id="dots-container"></div>
+
+        <!-- متن متغیر زیر اسلایدر -->
+        <div class="text-info-container">
+            <div class="text-content" id="text-box">
+                <h2 class="info-title" id="info-title">Loading...</h2>
+                <p class="info-desc" id="info-desc">Loading...</p>
+            </div>
+        </div>
+
+        <!-- دکمه‌های پایین و توضیحات کلی -->
+        <div class="bottom-section">
+            <h3 class="section-title">&lt; APP ARCHITECTURE & INFO /&gt;</h3>
+            
+            <p class="architecture-desc">
+                <strong>MoodFlix:</strong> Developed the app using Kotlin, Jetpack Compose, & MVVM, applying Clean Architecture and Repository Pattern for a scalable codebase. Integrated TMDB API for real-time media retrieval and Firebase (Auth/Firestore) for secure user management. Engineered a persistent "Favorites" playlist system (SharedPreferences & Gson) and designed a modern UI with Glassmorphism and custom animations.
+            </p>
+
+            <div class="grid-container">
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-house"></i></div>
+                    <div class="item-text">Clean Architecture</div>
+                </div>
+
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-info"></i></div>
+                    <div class="item-text">MVVM Pattern</div>
+                </div>
+
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-code-block"></i></div>
+                    <div class="item-text">Kotlin Coroutines</div>
+                </div>
+
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-paint-brush-broad"></i></div>
+                    <div class="item-text">Jetpack Compose</div>
+                </div>
+
+                <div class="grid-item">
+                    <div class="icon-box"><i class="ph-fill ph-database"></i></div>
+                    <div class="item-text">Firebase & Local Auth</div>
+                </div>
+
+                <!-- لینک سورس کد گیت‌هاب -->
+                <div class="grid-item" onclick="window.open('https://github.com/MobinJamshidi/MoodFlix', '_blank')">
+                    <div class="icon-box"><i class="ph-fill ph-github-logo"></i></div>
+                    <div class="item-text" style="color: var(--text-main);">Source Code</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- کدهای جاوااسکریپت -->
+    <script>
+        const slideData = [
+            {
+                title: "Secure Authentication",
+                desc: "For the authentication system, encompassing the login and password recovery pages, I fully implemented the app's security infrastructure on Firebase Authentication. My focus here was blending robust cloud security with a smooth user experience. Thus, I developed the UI with Jetpack Compose and designed a real-time validation system so users receive precise feedback on email formats or password standards before sending requests. I integrated user session management and the secure password recovery link flow within an MVVM and StateFlow architecture. This allowed me to handle various states like loading, network errors, or invalid server responses in a user-friendly manner with a centralized error management system, ensuring a secure and seamless transition post-authentication."
+            },
+            {
+                title: "Dynamic Main Dashboard",
+                desc: "For the app's Main Screen, I designed a dynamic, data-driven system to display the world's latest and most up-to-date movies in real-time. The core of this page is built on TMDB API integration; using Retrofit and the power of Kotlin Coroutines, I managed network requests entirely asynchronously to fetch large volumes of images and text without blocking or dropping frames in the UI. Users can browse movies separated by diverse categories and access comprehensive, structured information. To maintain scalability and high performance, I organized this complex data flow based on Clean Architecture principles. Data processed in the Repository layer is injected by ViewModel and StateFlow into the Jetpack Compose UI, ensuring a fluid, fast, and fully responsive experience."
+            },
+            {
+                title: "Real-Time Exact Match",
+                desc: "For the app's search section, I developed an advanced exploration system with a special focus on Exact Match capabilities, allowing users to find their desired movie among thousands of titles in the fastest possible time. User text inputs are received via a custom, dynamic search bar in Compose, and the data flow is managed using StateFlow and Debounce implementation. This optimization prevents instantaneous, unnecessary server requests while granting the user a completely live, lag-free search experience. The core functionality operates by sending targeted queries to the TMDB API. Once the network responds, the architecture intelligently processes the results, discarding irrelevant titles to display only the movie that precisely matches the search query."
+            },
+            {
+                title: "Smart Match Filters",
+                desc: "For the Smart Match search section, I engineered a system that goes beyond simple text search, specifically optimized to handle incomplete inputs, keywords, and typos. On the client side, I harnessed the user's typing flow using advanced StateFlow operators (debounce, distinctUntilChanged) to prevent server spamming. These optimized queries are routed via Retrofit to TMDB's advanced search endpoints. In the Data and Domain layers, I adhered strictly to Clean Architecture, parsing raw DTOs and writing a local filtering and mapping layer to sort results by weighting, popularity, or semantic relevance. Ultimately, I utilized a unified state management pattern (Sealed Classes) and displayed the results in a Compose LazyColumn with pagination, ensuring smooth scrolling even with hundreds of matched results."
+            },
+            {
+                title: "Reactive Movie Details",
+                desc: "For the Movie Details screen, I engineered a fully reactive and optimized data flow for On-Demand loading. To prevent unnecessary RAM usage, a lightweight list is rendered initially. Upon clicking a movie, its unique ID is securely passed via the Compose Navigation Graph. The ViewModel immediately initiates an asynchronous operation on Dispatchers.IO using Coroutines to fetch deep movie data without blocking the Main Thread. Following Clean Architecture, this raw data is mapped into structured Domain Models. I used State Management based on Sealed Classes to transition the UI between Loading, Error, and Success states. I also leveraged the Coil library to handle high-quality posters and backdrops, ensuring optimal image caching and crossfade animations without memory leaks."
+            },
+            {
+                title: "Glassmorphism Favorites",
+                desc: "For the Favorites list, I developed an integrated system focusing on performance and visual aesthetics. I designed this screen's UI using Jetpack Compose and the modern Glassmorphism technique to offer users a captivating, premium look. To guarantee speed and prevent frame drops in long lists, I utilized Lazy components so only currently visible items are rendered. In the data storage layer, to avoid the overhead of heavy databases, I implemented a lightweight, offline system using the Gson library that converts and maintains complex movie information in JSON format. Finally, I integrated this entire structure with MVVM architecture and StateFlow to form a fully reactive environment, ensuring that any user modifications to the list update instantaneously without requiring a manual refresh."
+            },
+            {
+                title: "Local Media Explorer",
+                desc: "For the Local Media Explorer screen, I developed a highly optimized, network-independent file reading and management system. The main challenge was reading a high volume of media files and extracting their metadata from local storage without causing UI lag. I encapsulated Local Storage access within the Data layer and isolated all heavy I/O operations using Kotlin Coroutines on Dispatchers.IO, keeping the Main Thread completely free. This processed local data flow is then injected into the UI layer via StateFlow. In the UI, using LazyVerticalGrid in Compose, I implemented a modern, responsive grid gallery. Additionally, to extract and render video thumbnails on the fly, I optimized the Coil engine to ensure flawlessly smooth scrolling and a native offline experience."
+            },
+            {
+                title: "Secure Profile Session",
+                desc: "For the Personal Screen, I developed a completely secure account management dashboard centered on Session Integrity. This involved three major challenges: 1) Media Upload: I used the Android Photo Picker API to create a secure flow for profile picture changes without needing extra permissions, uploading the image asynchronously to Firebase Storage via Coroutines. 2) Re-authentication: For sensitive actions like password changes, I implemented Firebase's re-authentication flow with real-time Compose form validation. 3) Secure Logout: I designed a comprehensive cleanup system that terminates the active Firebase Auth session, clears stored tokens and caches (like DataStore), and completely clears the Navigation Graph backstack, guaranteeing that a logged-out user cannot return to Authenticated Screens via the device's back button."
+            }
+        ];
+
+        let currentIndex = 0;
+        const slides = document.querySelectorAll('.slide');
+        const dotsContainer = document.getElementById('dots-container');
+        const textBox = document.getElementById('text-box');
+        const titleEl = document.getElementById('info-title');
+        const descEl = document.getElementById('info-desc');
+
+        slides.forEach((_, index) => {
+            const dot = document.createElement('div');
+            dot.classList.add('dot');
+            dot.onclick = () => handleSlideClick(index);
+            dotsContainer.appendChild(dot);
+        });
+        const dots = document.querySelectorAll('.dot');
+
+        function updateSlider() {
+            slides.forEach((slide, index) => {
+                slide.classList.remove('active', 'prev', 'next', 'hidden-left', 'hidden-right');
+                
+                if (index === currentIndex) {
+                    slide.classList.add('active');
+                } else if (index === currentIndex - 1 || (currentIndex === 0 && index === slides.length - 1)) {
+                    slide.classList.add('prev');
+                } else if (index === currentIndex + 1 || (currentIndex === slides.length - 1 && index === 0)) {
+                    slide.classList.add('next');
+                } else if (index < currentIndex) {
+                    slide.classList.add('hidden-left');
+                } else {
+                    slide.classList.add('hidden-right');
+                }
+            });
+
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentIndex);
+            });
+
+            textBox.classList.remove('fade-in');
+            textBox.classList.add('fade-out');
+            
+            setTimeout(() => {
+                titleEl.innerText = slideData[currentIndex].title;
+                descEl.innerText = slideData[currentIndex].desc;
+                
+                textBox.classList.remove('fade-out');
+                textBox.classList.add('fade-in');
+            }, 300);
+        }
+
+        function handleSlideClick(index) {
+            if (index === currentIndex) {
+                openLightbox(index);
+            } else {
+                currentIndex = index;
+                updateSlider();
+            }
+        }
+
+        const lightbox = document.getElementById('imageLightbox');
+        const fullSizeImage = document.getElementById('fullSizeImage');
+
+        function openLightbox(index) {
+            fullSizeImage.src = `m${index + 1}.jpg`; 
+            lightbox.classList.add('show');
+        }
+
+        function closeLightbox() {
+            lightbox.classList.remove('show');
+        }
+
+        updateSlider();
+    </script>
+</body>
+</html>

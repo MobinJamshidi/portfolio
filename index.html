@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobin Jamshidi - Portfolio</title>
+    <!-- اضافه کردن کتابخانه آیکون‌های مینیمال -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        /* تنظیمات رنگ و فونت پایه */
+        :root {
+            --bg-main: #121212;
+            --bg-sidebar: #0f0f0f;
+            --text-primary: #ffffff;
+            --text-secondary: #888888;
+            --border-color: #2a2a2a;
+            --accent-color: #e0e0e0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- استایل شبکه مهندسی (Tech Grid) در پس‌زمینه IDE --- */
+        body::before {
+            content: "";
+            position: fixed; 
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px; 
+            z-index: 0;
+            pointer-events: none;
+            mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+            -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 90%);
+        }
+
+        /* ستون سمت چپ (پروفایل) */
+        .sidebar-left {
+            width: 320px;
+            background-color: var(--bg-sidebar);
+            padding: 40px 30px;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            z-index: 10;
+        }
+
+        .profile-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            background-color: #333;
+            object-fit: cover;
+        }
+
+        .name-role h1 {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .name-role h2 {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        .bio {
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--accent-color);
+            margin-bottom: 40px;
+        }
+
+        /* استایل لیست اطلاعات با آیکون */
+        .info-list {
+            list-style: none;
+            font-family: 'Courier New', Courier, monospace;
+            margin-bottom: 40px;
+        }
+
+        .info-list li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+
+        .info-list i {
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            font-weight: normal;
+        }
+
+        /* استایل دکمه دانلود رزومه و شبکه‌های اجتماعی */
+        .cv-container {
+            display: flex;
+            margin-top: auto;
+            border: 1px solid #333;
+            border-radius: 2px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-cv-text {
+            background-color: transparent;
+            color: var(--text-primary);
+            padding: 12px 20px;
+            flex: 1;
+            text-align: center;
+            font-weight: bold;
+            font-family: sans-serif;
+            font-size: 0.85rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn-cv-icon {
+            background-color: #1a1a1a;
+            color: var(--text-primary);
+            padding: 12px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-left: 1px solid #333;
+            transition: background-color 0.3s ease;
+        }
+
+        .cv-container:hover {
+            border-color: var(--text-secondary);
+        }
+
+        .cv-container:hover .btn-cv-text {
+            background-color: #1a1a1a;
+        }
+
+        .cv-container:hover .btn-cv-icon {
+            background-color: #2a2a2a;
+        }
+
+        /* بخش میانی (محتوای اصلی) */
+        .main-content {
+            flex: 1;
+            display: flex;
+            position: relative;
+            z-index: 5;
+        }
+
+        .line-numbers {
+            width: 50px;
+            background-color: transparent;
+            border-right: 1px solid var(--border-color);
+            text-align: right;
+            padding: 40px 15px;
+            color: #444;
+            font-size: 0.85rem;
+            user-select: none;
+            line-height: 1.8;
+            overflow: hidden;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 40px 60px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .hero-text {
+            margin-bottom: 60px;
+        }
+        
+        .hero-text .comment {
+            color: #5c6370;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .hero-text h1 {
+            font-size: 4.5rem;
+            line-height: 1.1;
+            font-weight: bold;
+            letter-spacing: -2px;
+            font-family: sans-serif;
+        }
+
+        .hero-text h1 span {
+            color: var(--text-secondary);
+        }
+
+        /* بخش پروژه‌ها (گرید بزرگ‌تر شده) */
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .project-card {
+            background-color: var(--bg-sidebar);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
+
+        .project-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .project-card-header {
+            padding: 15px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .project-card-header h3 {
+            font-size: 1rem;
+            font-weight: bold;
+            font-family: sans-serif;
+        }
+
+        .project-arrow {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        /* ستون سمت راست (منو) */
+        .sidebar-right {
+            width: 200px;
+            padding: 40px 30px;
+            border-left: 1px solid var(--border-color);
+            background-color: var(--bg-sidebar);
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-menu li {
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+        .nav-menu li:hover {
+            color: var(--text-primary);
+        }
+
+        .tech-tag {
+            padding: 8px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--accent-color);
+            font-family: sans-serif;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .tech-tag:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
+        }
+        
+        /* پاپ آپ مدال */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background-color: var(--bg-sidebar);
+            width: 90%;
+            max-width: 800px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ستون سمت چپ -->
+    <aside class="sidebar-left">
+        <div class="profile-header">
+            <img src="profile.png" alt="Mobin Jamshidi" class="profile-img">
+            <div class="name-role">
+                <h1>Mobin Jamshidi</h1>
+                <h2>Mobile App Developer</h2>
+            </div>
+        </div>
+
+        <p class="bio">
+            I am a CS student and mobile developer (Android/KMP) specializing in Clean Architecture and Jetpack Compose. Fluent in five languages, I combine robust software engineering with academic research in Machine Learning (Federated Learning) to solve complex challenges.
+        </p>
+
+        <ul class="info-list">
+            <li><i class="ph-light ph-code"></i> Kotlin, Jetpack Compose, Dart, Flutter, Python</li>
+            <li><i class="ph-light ph-envelope-simple"></i> Mobin.Jam@outlook.com</li>
+            <li><i class="ph-light ph-phone"></i> 09014186595</li>
+        </ul>
+
+        <!-- دکمه دانلود رزومه -->
+        <a href="resume.pdf" class="cv-container" download>
+            <div class="btn-cv-text">Download CV</div>
+            <div class="btn-cv-icon"><i class="ph ph-download-simple"></i></div>
+        </a>
+    </aside>
+
+    <!-- بخش میانی -->
+    <main class="main-content">
+        <!-- شماره خطوط -->
+        <div class="line-numbers" id="line-numbers"></div>
+        
+        <div class="content-area" id="content-scroll">
+            
+            <!-- بخش 1: Hero و پروژه‌ها -->
+            <div id="section-work">
+                <div class="hero-text">
+                    <span class="comment">&lt;!-- Hero section --&gt;</span>
+                    <h1>Scalable App<br><span>Developer</span></h1>
+                </div>
+                
+                <span class="comment" style="color: #5c6370; font-size: 0.9rem;">&lt;!-- Featured work --&gt;</span>
+                
+                <div class="portfolio-grid">
+                    
+                    <!-- پروژه Tempo -->
+                    <div class="project-card" onclick="window.location.href='tempo.html'">
+                        <div class="project-card-header">
+                            <h3>Tempo</h3>
+                            <span class="project-arrow">↗</span>
+                        </div>
+                        <img src="tempo.jpg" alt="Tempo App" style="width: 100%; height: 280px; object-fit: cover; object-position: center; display: block;">
+                    </div>
+
+                    <!-- پروژه MoodFlix -->
+                    <div class="project-card" onclick="window.location.href='moodflix.html'">
+                        <div class="project-card-header">
+                            <h3>MoodFlix</h3>
+                            <span class="project-arrow">→</span>
+                        </div>
+                        <img src="moodflix.png" alt="MoodFlix App" style="width: 100%; height: 280px; object-fit: cover; object-position: center; display: block;">
+                    </div>
+
+                    <!-- پروژه Gym Guys -->
+                    <div class="project-card" onclick="window.location.href='gym.html'">
+                        <div class="project-card-header">
+                            <h3>Gym Guys</h3>
+                            <span class="project-arrow">→</span>
+                        </div>
+                        <img src="gym.jpg" alt="Gym Guys App" style="width: 100%; height: 280px; object-fit: cover; object-position: center; display: block;">
+                    </div>
+
+                    <!-- پروژه Resto Manager -->
+                    <div class="project-card" onclick="window.location.href='resto.html'">
+                        <div class="project-card-header">
+                            <h3>Resto Manager</h3>
+                            <span class="project-arrow">→</span>
+                        </div>
+                        <img src="resto.jpg" alt="Resto Manager App" style="width: 100%; height: 280px; object-fit: cover; object-position: center; display: block;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- بخش 2: درباره من -->
+            <div id="section-about" style="margin-top: 100px;">
+                <span class="comment" style="color: #5c6370; font-size: 0.9rem; margin-bottom: 20px; display: block;">&lt;!-- About me --&gt;</span>
+                <h2 style="font-size: 2.5rem; margin-bottom: 20px; font-family: sans-serif;">Who am I?</h2>
+                <p style="color: var(--accent-color); line-height: 1.8; max-width: 800px; font-size: 0.95rem;">
+                    I am a Computer Science student and mobile developer with a strong focus on Android and Kotlin Multiplatform (KMP). I specialize in building maintainable and scalable applications using Clean Architecture and modern UI toolkits like Jetpack Compose.
+                    <br><br>
+                    Beyond standard app development, I am deeply involved in academic research, specifically exploring Machine Learning and Federated Learning to solve real-world challenges. Being fluent in five languages allows me to seamlessly integrate into diverse, international environments. When I step away from the IDE, I enjoy playing classical guitar and reading a good Stephen King novel.
+                </p>
+            </div>
+
+            <!-- بخش 3: تکنولوژی‌ها -->
+            <div id="section-tech" style="margin-top: 100px;">
+                <span class="comment" style="color: #5c6370; font-size: 0.9rem; margin-bottom: 20px; display: block;">&lt;!-- Tech Stack --&gt;</span>
+                <h2 style="font-size: 2.5rem; margin-bottom: 20px; font-family: sans-serif;">My Toolbox</h2>
+                <div style="display: flex; flex-wrap: wrap; gap: 12px; max-width: 800px;">
+                    <span class="tech-tag">Kotlin / KMP</span>
+                    <span class="tech-tag">Jetpack Compose</span>
+                    <span class="tech-tag">Flutter / Dart</span>
+                    <span class="tech-tag">Python</span>
+                    <span class="tech-tag">Clean Architecture</span>
+                    <span class="tech-tag">MVVM</span>
+                    <span class="tech-tag">Federated Learning</span>
+                    <span class="tech-tag">Room Database</span>
+                    <span class="tech-tag">Git / GitHub</span>
+                </div>
+            </div>
+
+            <!-- بخش 4: تماس با من -->
+            <div id="section-contact" style="margin-top: 100px; margin-bottom: 100px;">
+                <span class="comment" style="color: #5c6370; font-size: 0.9rem; margin-bottom: 20px; display: block;">&lt;!-- Contact me --&gt;</span>
+                <h2 style="font-size: 2.5rem; margin-bottom: 20px; font-family: sans-serif;">Let's Connect</h2>
+                <p style="color: var(--accent-color); line-height: 1.8; max-width: 800px; font-size: 0.95rem; margin-bottom: 30px;">
+                    Whether you have a project in mind, a question, or just want to say hi, my inbox is always open. I'll try my best to get back to you!
+                </p>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    
+                    <a href="mailto:Mobin.Jam@outlook.com" class="cv-container" style="display: inline-flex; width: auto; margin-top: 0;">
+                        <div class="btn-cv-text">Send an Email</div>
+                        <div class="btn-cv-icon"><i class="ph ph-envelope-simple"></i></div>
+                    </a>
+                    
+                    <!-- لینک گیت‌هاب -->
+                    <a href="https://github.com/MobinJamshidi" target="_blank" class="cv-container" style="display: inline-flex; width: auto; margin-top: 0;">
+                        <div class="btn-cv-text">GitHub</div>
+                        <div class="btn-cv-icon"><i class="ph ph-github-logo"></i></div>
+                    </a>
+
+                    <!-- لینک لینکدین -->
+                    <a href="https://www.linkedin.com/in/mobin-jamshidi-296870276/" target="_blank" class="cv-container" style="display: inline-flex; width: auto; margin-top: 0;">
+                        <div class="btn-cv-text">LinkedIn</div>
+                        <div class="btn-cv-icon"><i class="ph ph-linkedin-logo"></i></div>
+                    </a>
+
+                    <!-- لینک تلگرام -->
+                    <a href="https://t.me/iniit6" target="_blank" class="cv-container" style="display: inline-flex; width: auto; margin-top: 0;">
+                        <div class="btn-cv-text">Telegram</div>
+                        <div class="btn-cv-icon"><i class="ph ph-telegram-logo"></i></div>
+                    </a>
+
+                    <!-- لینک اینستاگرام -->
+                    <a href="https://www.instagram.com/mobiin.jam?igsh=MXZ6dmp6d3ZhazdzZg==" target="_blank" class="cv-container" style="display: inline-flex; width: auto; margin-top: 0;">
+                        <div class="btn-cv-text">Instagram</div>
+                        <div class="btn-cv-icon"><i class="ph ph-instagram-logo"></i></div>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- ستون سمت راست -->
+    <aside class="sidebar-right">
+        <ul class="nav-menu">
+            <li style="color: white; cursor: default; font-weight: bold;">Index</li>
+            <br>
+            <li onclick="scrollToSection('section-work')">Work</li>
+            <li onclick="scrollToSection('section-about')">About me</li>
+            <li onclick="scrollToSection('section-tech')">Tech stack</li>
+            <li onclick="scrollToSection('section-contact')">Contact me</li>
+        </ul>
+    </aside>
+
+    <!-- ساختار کاتالوگ پاپ‌آپ (Modal) -->
+    <div id="projectModal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">✕</button>
+            <h2 id="modalTitle" class="modal-title">Project Title</h2>
+            <div id="modalTech" class="modal-tech" style="font-family: sans-serif;">Tech Stack</div>
+            <p id="modalDesc" class="modal-desc" style="font-family: sans-serif;">Project description goes here.</p>
+            <a id="modalLink" href="#" class="modal-link" target="_blank">View on GitHub</a>
+        </div>
+    </div>
+
+    <script>
+        function openModal(title, tech, desc, link) {
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalTech').innerText = tech;
+            document.getElementById('modalDesc').innerText = desc;
+            document.getElementById('modalLink').href = link;
+            document.getElementById('projectModal').style.display = 'flex';
+        }
+
+        function closeModal() {
+            document.getElementById('projectModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            var modal = document.getElementById('projectModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function scrollToSection(sectionId) {
+            const section = document.getElementById(sectionId);
+            const container = document.getElementById('content-scroll');
+            container.scrollTo({
+                top: section.offsetTop - 40, 
+                behavior: 'smooth'
+            });
+        }
+
+        function generateLineNumbers() {
+            let lines = "";
+            for (let i = 1; i <= 150; i++) {
+                lines += i + "<br>";
+            }
+            document.getElementById("line-numbers").innerHTML = lines;
+        }
+        
+        window.onload = generateLineNumbers;
+    </script>
+
+</body>
+</html>
