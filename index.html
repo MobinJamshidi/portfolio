@@ -300,48 +300,81 @@
             border-color: var(--text-secondary);
             color: var(--text-primary);
         }
-        
-        /* پاپ آپ مدال */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(5px);
-        }
 
-        .modal-content {
-            background-color: var(--bg-sidebar);
-            width: 90%;
-            max-width: 800px;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 40px;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .close-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 1.5rem;
-            color: var(--text-secondary);
-            cursor: pointer;
-            background: none;
-            border: none;
-        }
-
-        .close-btn:hover {
-            color: var(--text-primary);
+        /* --- کدهای ریسپانسیو برای موبایل و تبلت --- */
+        @media (max-width: 992px) {
+            body {
+                flex-direction: column; /* تبدیل ستون‌ها به ردیف‌های زیر هم */
+                height: auto;
+                overflow-y: auto; /* فعال کردن اسکرول عمودی */
+            }
+            
+            /* ستون سمت چپ (پروفایل) */
+            .sidebar-left {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 30px 20px;
+                text-align: center;
+            }
+            
+            .profile-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .info-list li {
+                justify-content: center; /* وسط‌چین کردن اطلاعات تماس */
+            }
+            
+            /* بخش میانی (محتوای اصلی) */
+            .main-content {
+                width: 100%;
+            }
+            
+            .line-numbers {
+                display: none; /* مخفی کردن شماره خطوط در موبایل برای باز شدن فضای متن */
+            }
+            
+            .content-area {
+                padding: 30px 20px;
+                overflow-y: visible; 
+            }
+            
+            .hero-text h1 {
+                font-size: 2.8rem; /* کوچک‌تر کردن تیتر اصلی */
+            }
+            
+            /* گرید پروژه‌ها */
+            .portfolio-grid {
+                grid-template-columns: 1fr; /* نمایش پروژه‌ها به صورت تک‌ستونی */
+            }
+            
+            /* ستون سمت راست (منو) */
+            .sidebar-right {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border-color);
+                padding: 20px;
+            }
+            
+            .nav-menu {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+            
+            .nav-menu li {
+                margin-bottom: 0;
+                padding: 8px 12px;
+                background: rgba(255,255,255,0.05);
+                border-radius: 8px;
+            }
+            
+            .nav-menu br { 
+                display: none; 
+            }
         }
     </style>
 </head>
@@ -416,7 +449,7 @@
                             <h3>Gym Guys</h3>
                             <span class="project-arrow">→</span>
                         </div>
-                        <img src="gym.jpg" alt="Gym Guys App" style="width: 100%; height: 280px; object-fit: cover; object-position: center; display: block;">
+                        <img src="gym.png" alt="Gym Guys App" style="width: 100%; height: 280px; object-fit: cover; object-position: center; display: block;">
                     </div>
 
                     <!-- پروژه Resto Manager -->
@@ -513,44 +546,25 @@
         </ul>
     </aside>
 
-    <!-- ساختار کاتالوگ پاپ‌آپ (Modal) -->
-    <div id="projectModal" class="modal">
-        <div class="modal-content">
-            <button class="close-btn" onclick="closeModal()">✕</button>
-            <h2 id="modalTitle" class="modal-title">Project Title</h2>
-            <div id="modalTech" class="modal-tech" style="font-family: sans-serif;">Tech Stack</div>
-            <p id="modalDesc" class="modal-desc" style="font-family: sans-serif;">Project description goes here.</p>
-            <a id="modalLink" href="#" class="modal-link" target="_blank">View on GitHub</a>
-        </div>
-    </div>
-
     <script>
-        function openModal(title, tech, desc, link) {
-            document.getElementById('modalTitle').innerText = title;
-            document.getElementById('modalTech').innerText = tech;
-            document.getElementById('modalDesc').innerText = desc;
-            document.getElementById('modalLink').href = link;
-            document.getElementById('projectModal').style.display = 'flex';
-        }
-
-        function closeModal() {
-            document.getElementById('projectModal').style.display = 'none';
-        }
-
-        window.onclick = function(event) {
-            var modal = document.getElementById('projectModal');
-            if (event.target == modal) {
-                modal.style.display = "none";
-            }
-        }
-
         function scrollToSection(sectionId) {
             const section = document.getElementById(sectionId);
             const container = document.getElementById('content-scroll');
-            container.scrollTo({
-                top: section.offsetTop - 40, 
-                behavior: 'smooth'
-            });
+            
+            // بررسی اینکه در حالت موبایل هستیم یا دسکتاپ
+            if (window.innerWidth <= 992) {
+                // در حالت موبایل که اسکرول روی کل صفحه (body) است
+                window.scrollTo({
+                    top: section.offsetTop - 20,
+                    behavior: 'smooth'
+                });
+            } else {
+                // در حالت دسکتاپ که اسکرول درون دیو خاصی است
+                container.scrollTo({
+                    top: section.offsetTop - 40, 
+                    behavior: 'smooth'
+                });
+            }
         }
 
         function generateLineNumbers() {

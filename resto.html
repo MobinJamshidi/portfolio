@@ -388,29 +388,48 @@
 
         @media (max-width: 768px) {
             .grid-container {
-                grid-template-columns: repeat(1, 1fr);
+                grid-template-columns: 1fr;
+            }
+            .slider-section {
+                height: 500px;
+                margin-top: 60px;
             }
             .slide {
-                width: 280px;
-                height: 450px; 
+                width: 260px;
+                height: 420px; 
+            }
+            .top-nav {
+                gap: 15px;
+                font-size: 0.75rem;
+                margin-top: 70px;
+            }
+            .top-nav .active-nav {
+                font-size: 1.3rem;
             }
             .back-btn {
-                position: relative;
-                left: 0;
-                top: 0;
-                margin-top: 20px;
-                padding: 8px 15px;
+                top: 15px;
+                left: 15px;
                 font-size: 0.8rem;
-                align-self: flex-start;
-                margin-left: 20px;
+                padding: 8px 15px;
             }
-            .info-desc {
-                text-align: left;
+            .info-title {
+                font-size: 1.3rem;
+            }
+            .text-info-container {
+                padding: 0 15px;
+                margin-top: 20px;
+            }
+            .architecture-desc {
+                font-size: 0.85rem;
+                padding: 0 10px;
             }
             .close-lightbox {
                 top: 15px;
                 right: 20px;
                 font-size: 2rem;
+            }
+            pre {
+                font-size: 0.7rem !important;
             }
         }
     </style>
